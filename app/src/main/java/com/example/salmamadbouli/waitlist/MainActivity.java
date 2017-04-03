@@ -1,5 +1,7 @@
 package com.example.salmamadbouli.waitlist;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,6 +11,7 @@ import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
     private GuestListAdapter mAdapter;
+    private SQLiteDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,10 +25,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Set layout for the RecyclerView, because it's a list we are using the linear layout
         waitlistRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        WaitlistDbHelper dbHelper = new WaitlistDbHelper(this);
+        mDb = dbHelper.getWritableDatabase();
+        TestUtil.insertFakeData(mDb);
+        Cursor cursor = getAllGuests();
 
         // Create an adapter for that cursor to display the data
-        mAdapter = new GuestListAdapter(this);
-
+        mAdapter = new GuestListAdapter(this, cursor.getCount());
         // Link the adapter to the RecyclerView
         waitlistRecyclerView.setAdapter(mAdapter);
 
@@ -39,4 +45,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private Cursor getAllGuests() {
+        return mDb.query(
+                WaitlistContract.WaitlistEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                WaitlistContract.WaitlistEntry.COLUMN_TIMESTAMP
+        );
+    }
 }
